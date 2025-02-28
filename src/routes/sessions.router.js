@@ -2,10 +2,11 @@ import { Router } from "express";
 import UsuarioModel from "../models/user.model.js";
 import jwt from "jsonwebtoken"
 import { createHash, isValidPassword } from "../utils/util.js";
-import router from "./product.router.js";
+// import router from "./product.router.js";
 import passport from "passport";
+import cartModel from "../models/cart.model.js";
 
-// const router = Router()
+const router = Router()
 
 // probablemente aqui tambien tenga que hacer modificaciones con la consigna
 router.post("/login", async (req, res) => {
@@ -34,24 +35,21 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// modificacion del cartID
-import CartManager from "../managers/cart-manager.js"
-const manager = new CartManager()
-
+// aqui debo tener en cuenta que todo es en la db no en el cart manager
 router.post("/register", async (req, res) => {
     try {
         const { usuario, password } = req.body;
 
-        const nuevoCarrito = await manager.crearCarrito()
+        // Crear un nuevo carrito en la base de datos
+        const nuevoCarrito = new cartModel();
+        await nuevoCarrito.save();
 
         const user = new UsuarioModel({
             usuario,
             password: createHash(password),
-            cart: nuevoCarrito._id
-            // o tambien
-            // cart: crearCarrito()
+            cart: nuevoCarrito._id // Asignar el ID del nuevo carrito al usuario
         });
-        // podemos resolverlo de esta forma.
+
         await user.save();
 
         res.redirect('/login')
