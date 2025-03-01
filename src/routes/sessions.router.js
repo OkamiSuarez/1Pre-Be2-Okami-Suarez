@@ -11,11 +11,11 @@ const router = Router()
 // probablemente aqui tambien tenga que hacer modificaciones con la consigna
 router.post("/login", async (req, res) => {
     try {
-        const { usuario, password } = req.body;
-        const user = await UsuarioModel.findOne({ usuario });
+        const { email, password } = req.body;
+        const user = await UsuarioModel.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({ error: "Usuario no encontrado" });
+            return res.status(401).json({ error: "email no encontrado" });
         }
 
         if (!isValidPassword(password, user)) {
@@ -24,7 +24,7 @@ router.post("/login", async (req, res) => {
 
         // genero el token
         const token = jwt.sign(
-            { usuario: user.usuario, rol: user.rol },
+            { email: user.email, rol: user.rol },
             "coderhouse", {expiresIn: "1h"}
         );
         res.cookie("coderCookieToken", token, { httpOnly: true, maxAge: 3600000 });
@@ -38,14 +38,17 @@ router.post("/login", async (req, res) => {
 // aqui debo tener en cuenta que todo es en la db no en el cart manager
 router.post("/register", async (req, res) => {
     try {
-        const { usuario, password } = req.body;
+        const { first_name, last_name, email, age, password } = req.body;
 
         // Crear un nuevo carrito en la base de datos
         const nuevoCarrito = new cartModel();
         await nuevoCarrito.save();
 
         const user = new UsuarioModel({
-            usuario,
+            first_name,
+            last_name,
+            email,
+            age,
             password: createHash(password),
             cart: nuevoCarrito._id // Asignar el ID del nuevo carrito al usuario
         });
